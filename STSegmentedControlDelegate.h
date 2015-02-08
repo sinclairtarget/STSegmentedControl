@@ -1,5 +1,5 @@
 //
-//  STSegmentedControlDelegate.h
+//  SPC_SegmentedControlDelegate.h
 //
 //  Created by Sinclair Target on 12/26/14.
 //

@@ -5,18 +5,18 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "STSegmentedControlDelegate.h"
+#import "SPC_SegmentedControlDelegate.h"
 
 /**
  *  A custom implementation of a UISegmentedControl-like control which supports
  *  multiple selection.
  */
-@interface STSegmentedControl : UIView
+@interface SPC_SegmentedControl : UIView
 
 /**
  *  The delegate that receives events from this control.
  */
-@property (weak, nonatomic) id <STSegmentedControlDelegate> delegate;
+@property (weak, nonatomic) id <SPC_SegmentedControlDelegate> delegate;
 
 /**
  *  Number of segments in the control.
@@ -36,7 +36,7 @@
 @property (strong, nonatomic) UIColor* highlightColor;
 
 // =======================================================================
-//                  @name Setting Segment Content
+///          @name Setting Segment Content
 // =======================================================================
 /**
  *  Sets a text title for a given segment.
@@ -53,7 +53,7 @@
 - (void)setImage:(UIImage*)image forSegmentAtIndex:(NSUInteger)segment;
 
 // =======================================================================
-//                  @name Getting Selection State
+///          @name Getting Selection State
 // =======================================================================
 /**
  *  Returns the selection state of a segment.

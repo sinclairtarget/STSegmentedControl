@@ -4,22 +4,24 @@
 //  Created by Sinclair Target on 12/26/14.
 //
 
-#import "STSegmentedControl.h"
+#import "SPC_SegmentedControl.h"
 #import <math.h>
 
-static const CGFloat DEFAULT_CORNER_RADIUS = 5;
-static const CGFloat LABEL_INSET = 2.5;
-static const CGFloat IMAGE_INSET = 5;
+static const CGFloat defaultCornerRadius = 5;
+static const CGFloat labelInset = 2.5;
+static const CGFloat imageInset = 5;
 
-@interface STSegmentedControl ()
+@interface SPC_SegmentedControl ()
 
-// the subviews in each segment, either a UILabel or a UIImageView
-// holds NSDictionaries representing (selected, view) tuples
+// The subviews in each segment, either a UILabel or a UIImageView.
+// holds NSDictionaries with "view" and "selected" keys representing
+// (view, selected) tuples
+// NOTE: the @"view" key will return NSNull if the view does not exist
 @property (strong, nonatomic) NSMutableArray* segmentContentViews;
 
 @end
 
-@implementation STSegmentedControl
+@implementation SPC_SegmentedControl
 
 // =======================================================================
 #pragma mark - Property Accessors
@@ -91,7 +93,7 @@ static const CGFloat IMAGE_INSET = 5;
 // Initializes the view whether it was created in IB or programmatically
 - (void)commonInit
 {
-    self.cornerRadius = DEFAULT_CORNER_RADIUS;
+    self.cornerRadius = defaultCornerRadius;
     self.layer.borderWidth = 1.0;
     self.clipsToBounds = YES;
     
@@ -133,7 +135,7 @@ static const CGFloat IMAGE_INSET = 5;
             CGRect segmentFrame = [self contentFrameForSegment:i
                                                      withInset:0];
             UIBezierPath* path =
-            [UIBezierPath bezierPathWithRect:segmentFrame];
+                [UIBezierPath bezierPathWithRect:segmentFrame];
             [self.tintColor setFill];
             [path fill];
             
@@ -188,15 +190,17 @@ static const CGFloat IMAGE_INSET = 5;
 // OVERRIDE
 - (void)layoutSubviews
 {
+    [super layoutSubviews];
+    
     for (int i = 0; i < self.numberOfSegments; i++)
     {
         UIView* view = self.segmentContentViews[i][@"view"];
         if ([view isKindOfClass:[UILabel class]])
-            [self contentFrameForSegment:i
-                               withInset:LABEL_INSET];
+            view.frame = [self contentFrameForSegment:i
+                                            withInset:labelInset];
         else
-            [self contentFrameForSegment:i
-                               withInset:IMAGE_INSET];
+            view.frame = [self contentFrameForSegment:i
+                                            withInset:imageInset];
     }
 }
 
@@ -213,13 +217,12 @@ static const CGFloat IMAGE_INSET = 5;
     UILabel* label =
         [[UILabel alloc]
             initWithFrame:[self contentFrameForSegment:segment
-                                             withInset:LABEL_INSET]];
+                                             withInset:labelInset]];
     label.text = title;
     label.textAlignment = NSTextAlignmentCenter;
     label.textColor = self.tintColor;
     
-    self.segmentContentViews[segment][@"view"] = label;
-    [self addSubview:label];
+    [self setSubview:label forSegmentAtIndex:segment];
 }
 
 - (void)setImage:(UIImage*)image forSegmentAtIndex:(NSUInteger)segment
@@ -232,20 +235,31 @@ static const CGFloat IMAGE_INSET = 5;
     UIImageView* imageView =
         [[UIImageView alloc]
              initWithFrame:[self contentFrameForSegment:segment
-                                              withInset:IMAGE_INSET]];
+                                              withInset:imageInset]];
+    
     // a template image ignores colors and just uses alpha values
     UIImage* templateImage =
         [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     imageView.image = templateImage;
     imageView.tintColor = self.tintColor;
     
-    self.segmentContentViews[segment][@"view"] = imageView;
-    [self addSubview:imageView];
+    [self setSubview:imageView forSegmentAtIndex:segment];
 }
 
 - (BOOL)isSelectedForSegmentAtIndex:(NSUInteger)segment
 {
     return [self.segmentContentViews[segment][@"selected"] boolValue];
+}
+
+// private
+- (void)setSubview:(UIView*)view forSegmentAtIndex:(NSUInteger)segment
+{
+    UIView* segmentView = self.segmentContentViews[segment][@"view"];
+    if (![segmentView isEqual:[NSNull null]])
+        [segmentView removeFromSuperview];
+    
+    self.segmentContentViews[segment][@"view"] = view;
+    [self addSubview:view];
 }
 
 // =======================================================================
@@ -271,7 +285,7 @@ static const CGFloat IMAGE_INSET = 5;
 }
 
 // =======================================================================
-#pragma mark - Helper Methods
+#pragma mark - Private Helper Methods
 // =======================================================================
 // removes all subviews and resets self.segmentContentViews
 - (void)clearSegmentContentViews
